@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Flip-kort – 3 sidor</title>
+<style>
+  :root{
+    --w: min(92vw, 440px);
+    --h: calc(var(--w) * 1.5);
+    --radius: 18px;
+    --shadow: 0 16px 40px rgba(0,0,0,.18);
+    --ink: #0b3a84;
+    --gold: #d4af37;
+    --paper: #f7f6f2;
+    --rot: 0;
+    --z: calc(var(--w) / 2);
+  }
+  html,body{
+    height:100%; margin:0; background:#eef1f7;
+    font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+    display:grid; place-items:center;
+  }
+  .wrap{ display:flex; flex-direction:column; gap:12px; align-items:center }
+
+  .stage{ perspective: 1400px; width: var(--w); height: var(--h); }
+  .carousel{
+    width:100%; height:100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .9s cubic-bezier(.2,.7,.2,1);
+    transform: translateZ(calc(var(--z) * -1)) rotateY(var(--rot));
+    cursor: pointer; user-select: none;
+  }
+
+  .face{
+    position:absolute; inset:0;
+    border-radius: var(--radius);
+    overflow: hidden; backface-visibility: hidden;
+    box-shadow: var(--shadow);
+    background: var(--paper);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .face::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 0 4px rgba(212,175,55,.45);
+  }
+
+  /* ORDNINGEN: Front (0°) -> Hälsning (240°) -> Present (120°) */
+  .front   { transform: rotateY(  0deg) translateZ(var(--z)); }
+  .greeting{ transform: rotateY(240deg) translateZ(var(--z)); }
+  .present { transform: rotateY(120deg) translateZ(var(--z)); }
+
+  .face-bg{
+    position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(212,175,55,.35) 0 2px, transparent 3px) 0 0/60px 60px,
+      radial-gradient(circle at 70% 60%, rgba(11,58,132,.25) 0 2px, transparent 3px) 0 0/70px 70px;
+  }
+
+  /* FRAMSIDA */
+  .front .inner{ display:flex; flex-direction:column; align-items:center; gap:14px; padding:18px; }
+  .age{
+    margin-top:10px;
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight:900; letter-spacing:.04em; line-height:1;
+    color: transparent;
+    background: radial-gradient(120% 120% at 30% 25%, #ffffff 0 25%, #5d7cc7 26% 55%, #2a4ca3 56% 85%, #192d6b 86% 100%);
+    -webkit-background-clip: text; background-clip: text;
+    text-shadow: 0 2px 0 rgba(0,0,0,.12), 0 8px 18px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.6);
+  }
+  .age small{ font-size:.55em; color:#2f468f; margin-left:.2em }
+  .photo{
+    width:88%; aspect-ratio: 1/1; border-radius:14px; overflow:hidden;
+    border:4px solid rgba(212,175,55,.45);
+    box-shadow: 0 14px 30px rgba(0,0,0,.18); background:#ddd;
+  }
+  .photo img{ width:100%; height:100%; object-fit:cover; display:block }
+  .greeting-text{ font-size: clamp(18px, 3.8vw, 26px); color: var(--ink); font-weight:700; text-align:center; }
+
+  /* HÄLSNINGSSIDA */
+  .greeting .inner{
+    max-width:86%; background:#fff; border-radius:16px; padding:24px 18px;
+    border:3px solid rgba(212,175,55,.35);
+    box-shadow:0 10px 24px rgba(0,0,0,.12);
+    text-align:center; color: var(--ink);
+    position:relative;
+  }
+  .stripe{ height:8px; border-radius:6px; margin:-6px auto 10px;
+    width:70%; background: linear-gradient(90deg,#0b3a84,#d4af37,#0b3a84); }
+  .greeting h2{ margin:8px 0 6px; font-size: clamp(18px,4.2vw,24px) }
+  .greeting p{ margin:6px 0 0; font-size: clamp(16px,3.8vw,20px); line-height:1.55 }
+  .decor{ position:absolute; inset:0; pointer-events:none; font-size:28px; opacity:.9; }
+  .decor .sun{ position:absolute; top:10px; right:16px }
+  .decor .palm{ position:absolute; bottom:8px; left:14px }
+  .decor .ball{ position:absolute; bottom:10px; right:18px }
+
+  /* PRESENTSIDA */
+  .present .inner{
+    max-width:86%; background:#fff; border-radius:16px; padding:26px 18px;
+    border:3px solid rgba(212,175,55,.35);
+    box-shadow:0 10px 24px rgba(0,0,0,.12);
+    text-align:center; color: var(--ink);
+  }
+  .present h3{ margin:0 0 10px; font-size: clamp(18px,4.2vw,22px) }
+  .present p{ margin:0; font-size: clamp(16px,3.8vw,20px); line-height:1.55 }
+  .tiny-decor{ font-size:22px; margin-top:10px }
+
+  .btn{ border:0; border-radius:999px; padding:10px 16px;
+    background:#0b3a84; color:#fff; font-weight:700;
+    box-shadow:0 8px 18px rgba(11,58,132,.25); }
+  .btn:active{ transform:translateY(1px) }
+  .hint{ font-size:.95rem; color:#334; opacity:.75; text-align:center }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="stage">
+      <div class="carousel" id="carousel" tabindex="0">
+        <!-- FRAMSIDA -->
+        <section class="face front" aria-label="Framsida">
+          <div class="face-bg"></div>
+          <div class="inner">
+            <div class="age">35<small>🎈</small></div>
+            <figure class="photo">
+              <img src="collage.jpg" alt="Vårt fotokollage" />
+            </figure>
+            <div class="greeting-text">Grattis på födelsedagen min älskling!</div>
+          </div>
+        </section>
+
+        <!-- HÄLSNINGSSIDA -->
+        <section class="face greeting" aria-label="Hälsning">
+          <div class="face-bg"></div>
+          <div class="inner">
+            <div class="stripe"></div>
+            <h2> 💙 YITBAREK 💙</h2>
+            <p>Jag älskar dig.<br/>
+               Jag önskar att du alltid njuter av livet,<br/>
+               oavsett var vi befinner oss i världen.<br/>
+               </p>
+            <div class="decor">
+              <span class="sun">☀️</span>
+              <span class="palm">🌴</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- PRESENTSIDA -->
+        <section class="face present" aria-label="Present">
+          <div class="face-bg"></div>
+          <div class="inner">
+            <h3>Överraskning väntar 🎁</h3>
+            <p>Din present är en överraskningskväll senare i september,<br/>
+               där både dina smaklökar och smilgropar kommer njuta. ✨</p>
+            <div class="tiny-decor">🎈🎉</div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <button class="btn" id="nextBtn">Öppna / Nästa sida</button>
+    <div class="hint">Tips: Klicka på kortet (eller knappen) för att bläddra.</div>
+  </div>
+
+<script>
+  const carousel = document.getElementById('carousel');
+  const btn = document.getElementById('nextBtn');
+  const steps = [0, 120, 240]; // 0° -> 120° -> 240° -> tillbaka
+  let i = 0;
+  function step(){
+    i = (i + 1) % steps.length;
+    document.documentElement.style.setProperty('--rot', steps[i] + 'deg');
+  }
+  carousel.addEventListener('click', step);
+  btn.addEventListener('click', step);
+  carousel.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault(); step();
+    }
+  });
+</script>
+</body>
+</html>
